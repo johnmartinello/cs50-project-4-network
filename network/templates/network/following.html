@@ -1,0 +1,83 @@
+{% extends "network/layout.html" %} {% load static %} {% block body %}
+<!-- New post section-->
+{% if user.is_authenticated %}
+<form id="newpostForm" method="POST" , action="{% url 'newPost' %}">
+	{% csrf_token %}
+	<div class="new-post-outer">
+		<div class="new-post-inner">
+			<label>New Post </label>
+			<br />
+			<textarea id="textareaContent" placeholder="What's on your mind?" name="postContent"></textarea>
+			<br />
+			<button type="submit" class="btn btn-secondary">Post</button>
+		</div>
+	</div>
+</form>
+{% endif %}
+<!---->
+
+<!--Posts section-->
+{% for post in posts %}
+<div class="row">
+	<div class="col">
+		<div class="card">
+			<div class="card-body">
+				<!-- post content -->
+				<div class="post" data-postid="{{post.id}}" >
+					<a class="card-title" href="{% url 'viewProfile' id=post.creator.id %}">{{post.creator}}</a>
+					<br />
+					<a class="content">{{post.content}}</a>
+					<br />
+					<a class="timestamp">{{post.timestamp}}</a>
+					<br />
+					{% if user.is_authenticated %}
+					<!--like section -->
+					{% if user in post.likes.all %}
+					<button data-likecount="{{post.likes.count}}" style="background-color: #bd2121" class="likePost" data-user="{{request.user}}" data-postid="{{post.id}}" type="submit">Dislike</button>
+					<a class="likes">{{post.likes.count}}</a>
+					{% else %}
+					<button data-likecount="{{post.likes.count}}" style="background-color: #b17b7b" class="likePost" data-user="{{request.user}}" data-postid="{{post.id}}" type="submit">Like</button>
+					<a class="likes">{{post.likes.count}}</a>
+					{% endif %}
+					<!---->
+					{% endif %}
+				</div>
+				<!---->
+
+				<!-- edit section-->
+				{% if post.creator == user %}
+				<button class="editButton" data-postid="{{post.id}}" data-postcontent="{{post.content}}" type="submit">Edit</button>
+				<div class="edit" data-postid="{{post.id}}">
+					<textarea class="textarea"></textarea>
+					<button class="saveEdit" data-likecount="{{post.like.count}}" data-user="{{request.user}}" data-postcreator="{{post.creator}}" data-postid="{{post.id}}" type="submit">Save</button>
+				</div>
+				{% endif %}
+				<!---->
+			</div>
+		</div>
+	</div>
+</div>
+{% endfor %}
+<!---->
+
+<!--Pagination section-->
+<div class="pagination">
+	<span class="step-links">
+		{% if posts.has_previous %}
+		<a href="?page=1">&laquo; first</a>
+		<a href="?page={{ posts.previous_page_number }}">previous</a>
+		{% endif %}
+
+		<span class="current"> Page {{ posts.number }} of {{ posts.paginator.num_pages }}. </span>
+
+		{% if posts.has_next %}
+		<a href="?page={{ posts.next_page_number }}">next</a>
+		<a href="?page={{ posts.paginator.num_pages }}">last &raquo;</a>
+		{% endif %}
+	</span>
+</div>
+<!---->
+
+{% block script %}
+<script src="{% static 'network/index.js' %}"></script>
+{% endblock %}{% endblock %}
